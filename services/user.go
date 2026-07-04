@@ -88,8 +88,8 @@ func (svc *UserService) LoginUser(data *dtos.CreateLogindto) (dtos.LoginUserResp
 	}
 
 	// 2. If 2FA is disabled, return tokens immediately
-	access, _ := helpers.GenerateJwt(user.Role, user.Email, time.Now().Add(30*time.Minute).Unix(), false)
-	refresh, _ := helpers.GenerateJwt(user.Role, user.Email, time.Now().Add(72*time.Hour).Unix(), true)
+	access, _ := helpers.GenerateJwt(user.Role, user.ID, user.Email, time.Now().Add(30*time.Minute).Unix(), false)
+	refresh, _ := helpers.GenerateJwt(user.Role, user.ID, user.Email, time.Now().Add(72*time.Hour).Unix(), true)
 
 	return dtos.LoginUserResponse{
 		// User:         user,
@@ -120,8 +120,8 @@ func (svc *UserService) Verify2FALogin(email string, otp string) (dtos.LoginUser
 	_ = svc.Repo.DeleteResetToken(otp)
 
 	// 4. Generate Tokens
-	access, _ := helpers.GenerateJwt(user.Role, user.Email, time.Now().Add(30*time.Minute).Unix(), false)
-	refresh, _ := helpers.GenerateJwt(user.Role, user.Email, time.Now().Add(72*time.Hour).Unix(), true)
+	access, _ := helpers.GenerateJwt(user.Role, user.ID, user.Email, time.Now().Add(30*time.Minute).Unix(), false)
+	refresh, _ := helpers.GenerateJwt(user.Role, user.ID, user.Email, time.Now().Add(72*time.Hour).Unix(), true)
 
 	return dtos.LoginUserResponse{
 		User:         user,
@@ -216,8 +216,8 @@ func (svc *UserService) Verify2FA(email string, code string) (dtos.LoginUserResp
 		return dtos.LoginUserResponse{}, http.StatusUnauthorized, errors.New("invalid 2fa code")
 	}
 
-	access, _ := helpers.GenerateJwt(user.Role, user.Email, time.Now().Add(30*time.Minute).Unix(), false)
-	refresh, _ := helpers.GenerateJwt(user.Role, user.Email, time.Now().Add(72*time.Hour).Unix(), true)
+	access, _ := helpers.GenerateJwt(user.Role, user.ID, user.Email, time.Now().Add(30*time.Minute).Unix(), false)
+	refresh, _ := helpers.GenerateJwt(user.Role, user.ID, user.Email, time.Now().Add(72*time.Hour).Unix(), true)
 
 	return dtos.LoginUserResponse{
 		User:         user,
@@ -277,7 +277,7 @@ func (svc *UserService) RefreshToken(email string) (*dtos.LoginUserResponse, int
 	if err != nil {
 		return nil, http.StatusUnauthorized, errors.New("unauthorized")
 	}
-	access, _ := helpers.GenerateJwt(user.Role, user.Email, time.Now().Add(15*time.Minute).Unix(), false)
-	refresh, _ := helpers.GenerateJwt(user.Role, user.Email, time.Now().Add(72*time.Hour).Unix(), true)
+	access, _ := helpers.GenerateJwt(user.Role, user.ID, user.Email, time.Now().Add(30*time.Minute).Unix(), false)
+	refresh, _ := helpers.GenerateJwt(user.Role, user.ID, user.Email, time.Now().Add(72*time.Hour).Unix(), true)
 	return &dtos.LoginUserResponse{User: user, AccessToken: access, RefreshToken: refresh}, http.StatusOK, nil
 }

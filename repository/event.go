@@ -21,7 +21,6 @@ func RegisterEventRepo(db *gorm.DB) *EventRepo {
 
 func (r *EventRepo) CreateEvent(event models.Event) error {
 	return r.DB.Create(&event).Error
-
 }
 
 func (r *EventRepo) GetallEvents() ([]models.Event, error) {
@@ -36,16 +35,26 @@ func (r *EventRepo) GetallEvents() ([]models.Event, error) {
 
 }
 
-func (r *EventRepo) FindEventById(id uint) (models.Event, error) {
+func (r *EventRepo) GetEventByID(id uint) (models.Event, error) {
 	var event models.Event
+	err := r.DB.First(&event, id).Error
+	return event, err
 
-	err := r.DB.Where("id = ?", id).First(&event).Error
+}
 
-	if err != nil {
-		return models.Event{}, err
-	}
-
-	return event, nil
+func (r *EventRepo) UpdateEventStatus(id uint, status string, adminID uint) error {
+	return r.DB.Model(&models.Event{}).
+		Where("id = ?", id).
+		Updates(map[string]interface{}{
+			"status":      status,
+			"reviewed_by": adminID,
+			"reviewed_at": gorm.Expr("NOW()"),
+		}).Error
+}
+func (r *EventRepo) GetApprovedEvents() ([]models.Event, error) {
+	var events []models.Event
+	err := r.DB.Where("status = ?", "approved").Find(&events).Error
+	return events, err
 }
 
 func (r *EventRepo) UpdateEvent(event models.Event) error {

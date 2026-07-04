@@ -11,7 +11,9 @@ func RegisterRoute(r *gin.Engine) {
 
 	UserHandler := handlers.RegisterUserHandler()
 	EventHandler := handlers.RegisterEventHandler()
+	RegisterHandler := handlers.NewRegisterHandler()
 	UserGroup := ApiGroup.Group("/users")
+
 	{
 		UserGroup.POST("/create", UserHandler.CreateUser)
 		UserGroup.POST("/login", UserHandler.LoginUser)
@@ -33,6 +35,16 @@ func RegisterRoute(r *gin.Engine) {
 		EventGroup.GET("/details/:event_id", middlewares.Authenticated(), middlewares.RequiredRole("ADMIN", "ORGANIZER"), EventHandler.FindEventByid)
 		EventGroup.PATCH("/Update/:id", middlewares.Authenticated(), middlewares.RequiredRole("ADMIN", "STAFF", "ORGANIZER"), EventHandler.UpdateEvent)
 		EventGroup.GET("/search", middlewares.Authenticated(), middlewares.RequiredRole("ADMIN", "STAFF", "ORGANIZER"), EventHandler.FilterEvents)
+		EventGroup.PATCH("approve/:id", middlewares.Authenticated(), middlewares.RequiredRole("ADMIN"), EventHandler.ApproveEvent)
+		EventGroup.GET("approved-event", middlewares.Authenticated(), middlewares.RequiredRole("ADMIN"), EventHandler.GetApprovedEvents)
+	}
+
+	RegisterGroup := ApiGroup.Group("/registers")
+	{
+		RegisterGroup.POST("/create", middlewares.Authenticated(), RegisterHandler.RegisterToEvent)
+		RegisterGroup.GET("/events/:id/users", middlewares.Authenticated(), RegisterHandler.GetEventUsers)
+		RegisterGroup.GET("/users/:id/events", middlewares.Authenticated(), RegisterHandler.GetUserEvents)
+		RegisterGroup.DELETE("/:eventId", middlewares.Authenticated(), RegisterHandler.CancelRegistration)
 	}
 
 }

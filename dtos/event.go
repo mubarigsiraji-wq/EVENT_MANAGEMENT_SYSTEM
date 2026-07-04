@@ -21,10 +21,15 @@ type UpdateEventDTO struct {
 	Description *string `json:"description"`
 	ImgURL      *string `json:"img_url"`
 }
+
 type EventFilterDTO struct {
 	Type      string `form:"type"`
 	Location  string `form:"location"`
 	StartDate string `form:"start_time"`
 	EndDate   string `form:"end_time"`
-	Search    string `form:"search"` // for title search
+	Search    string `form:"search"`
+}
+
+type ApproveEventDTO struct {
+	Status string `json:"status" binding:"required"`
 }

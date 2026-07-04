@@ -11,25 +11,29 @@ import (
 	"github.com/mubarik/EVENT_MANBAGEMENT_SYSTEM/infra"
 )
 
-// ✅ Correct Claims for jwt/v5
+// ===============================
+// JWT CLAIMS
+// ===============================
+
 type Claims struct {
-	Sub  string `json:"sub"`
-	Role string `json:"role"`
+	Sub    string `json:"sub"`
+	Role   string `json:"role"`
+	UserID uint   `json:"userID"`
+
 	jwt.RegisteredClaims
 }
 
-//
-// =========================
-// 🔐 ACCESS TOKEN MIDDLEWARE
-// =========================
-//
+// ===============================
+// ACCESS TOKEN MIDDLEWARE
+// ===============================
 
 func Authenticated() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
+		// 1. Get Authorization Header
 		authHeader := c.GetHeader("Authorization")
 
-		// 1. Check header exists
+		// 2. Check if header exists
 		if authHeader == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"message":    "Missing Authorization header",
@@ -38,7 +42,7 @@ func Authenticated() gin.HandlerFunc {
 			return
 		}
 
-		// 2. Check Bearer format
+		// 3. Validate Bearer format
 		if !strings.HasPrefix(authHeader, "Bearer ") {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"message":    "Invalid Authorization header format",
@@ -47,25 +51,27 @@ func Authenticated() gin.HandlerFunc {
 			return
 		}
 
-		// 3. Extract token
+		// 4. Extract token
 		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-
-		secret := []byte(infra.Configuration.Access_jwt_Token)
 
 		claims := &Claims{}
 
-		// 4. Parse token with claims
-		token, err := jwt.ParseWithClaims(tokenStr, claims, func(t *jwt.Token) (interface{}, error) {
+		// 5. Parse and validate token
+		token, err := jwt.ParseWithClaims(
+			tokenStr,
+			claims,
+			func(t *jwt.Token) (interface{}, error) {
 
-			// ✅ Security: check signing method
-			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, jwt.ErrSignatureInvalid
-			}
+				// Validate signing method
+				if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+					return nil, jwt.ErrSignatureInvalid
+				}
 
-			return secret, nil
-		})
+				return []byte(infra.Configuration.Access_jwt_Token), nil
+			},
+		)
 
-		// 5. Validate token
+		// 6. Validate token
 		if err != nil || !token.Valid {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"message":    "Unauthenticated",
@@ -74,7 +80,7 @@ func Authenticated() gin.HandlerFunc {
 			return
 		}
 
-		// 6. Check expiry (v5 style)
+		// 7. Check token expiration
 		if claims.ExpiresAt == nil || claims.ExpiresAt.Time.Before(time.Now()) {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"message":    "Access token expired",
@@ -83,38 +89,35 @@ func Authenticated() gin.HandlerFunc {
 			return
 		}
 
-		// 7. Validate payload
-		if claims.Sub == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"message":    "Invalid token payload",
-				"is_success": false,
-			})
-			return
-		}
-
-		// 8. Set context
+		// 8. Store user data in context
+		c.Set("user_id", claims.UserID)
 		c.Set("email", claims.Sub)
 		c.Set("role", claims.Role)
 
-		// 9. Log user
-		slog.Info("Authenticated user", "email", claims.Sub, "role", claims.Role)
+		// 9. Log authenticated user
+		slog.Info(
+			"Authenticated user",
+			"email", claims.Sub,
+			"role", claims.Role,
+			"user_id", claims.UserID,
+		)
 
+		// 10. Continue request
 		c.Next()
 	}
 }
 
-//
-// =========================
-// 🔁 REFRESH TOKEN MIDDLEWARE
-// =========================
-//
+// ===============================
+// REFRESH TOKEN MIDDLEWARE
+// ===============================
 
 func RefreshAuthenticated() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
+		// 1. Get Authorization Header
 		authHeader := c.GetHeader("Authorization")
 
-		// 1. Check header
+		// 2. Check header exists
 		if authHeader == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"message":    "Missing Authorization header",
@@ -123,7 +126,7 @@ func RefreshAuthenticated() gin.HandlerFunc {
 			return
 		}
 
-		// 2. Check Bearer format
+		// 3. Validate Bearer format
 		if !strings.HasPrefix(authHeader, "Bearer ") {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"message":    "Invalid Authorization header format",
@@ -132,22 +135,27 @@ func RefreshAuthenticated() gin.HandlerFunc {
 			return
 		}
 
-		// 3. Extract token
+		// 4. Extract token
 		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
 
 		claims := &Claims{}
 
-		// 4. Parse refresh token
-		token, err := jwt.ParseWithClaims(tokenStr, claims, func(t *jwt.Token) (interface{}, error) {
+		// 5. Parse token
+		token, err := jwt.ParseWithClaims(
+			tokenStr,
+			claims,
+			func(t *jwt.Token) (interface{}, error) {
 
-			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, jwt.ErrSignatureInvalid
-			}
+				// Validate signing method
+				if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+					return nil, jwt.ErrSignatureInvalid
+				}
 
-			return []byte(infra.Configuration.Refresh_jwt_token), nil
-		})
+				return []byte(infra.Configuration.Refresh_jwt_token), nil
+			},
+		)
 
-		// 5. Validate token
+		// 6. Validate token
 		if err != nil || !token.Valid {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"message":    "Unauthorized access",
@@ -156,7 +164,7 @@ func RefreshAuthenticated() gin.HandlerFunc {
 			return
 		}
 
-		// 6. Check expiry
+		// 7. Check refresh token expiration
 		if claims.ExpiresAt == nil || claims.ExpiresAt.Time.Before(time.Now()) {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"message":    "Refresh token expired",
@@ -165,20 +173,12 @@ func RefreshAuthenticated() gin.HandlerFunc {
 			return
 		}
 
-		// 7. Validate payload
-		if claims.Sub == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"message":    "Invalid token payload",
-				"is_success": false,
-			})
-			return
-		}
-
-		// 8. Set context
+		// 8. Store refresh user data
 		c.Set("user_email", claims.Sub)
+		c.Set("user_id", claims.UserID)
+		c.Set("role", claims.Role)
 
-		slog.Info("Refresh token valid", "email", claims.Sub)
-
+		// 9. Continue request
 		c.Next()
 	}
 }

@@ -29,27 +29,53 @@ func (h *EventHandler) CreateEvent(c *gin.Context) {
 	var body dtos.CreateEventDTO
 
 	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"messege":    err.Error(),
-			"is_success": false,
-		})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	status, err := h.EventSvc.CreateEvent(&body)
-
 	if err != nil {
-		c.JSON(status, gin.H{
-			"messege":    err.Error(),
-			"is_success": false,
-		})
+		c.JSON(status, gin.H{"error": err.Error()})
 		return
-
 	}
 
-	c.JSON(status, gin.H{"message": "event created successfully"})
+	c.JSON(status, gin.H{"message": "event submitted for approval"})
 }
+func (h *EventHandler) ApproveEvent(c *gin.Context) {
 
+	idStr := c.Param("id")
+	eventID, _ := strconv.Atoi(idStr)
+
+	var body dtos.ApproveEventDTO
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// assume admin ID comes from middleware
+	adminID := c.GetUint("user_id")
+
+	status, err := h.EventSvc.ApproveEvent(uint(eventID), adminID, body.Status)
+	if err != nil {
+		c.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(status, gin.H{"message": "event status updated"})
+}
+func (h *EventHandler) GetApprovedEvents(c *gin.Context) {
+
+	status, data, err := h.EventSvc.GetApprovedEvents()
+	if err != nil {
+		c.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(status, gin.H{
+		"message": "approved events fetched",
+		"data":    data,
+	})
+}
 func (h *EventHandler) Getall(c *gin.Context) {
 	status, event, err := h.EventSvc.Getall()
 
