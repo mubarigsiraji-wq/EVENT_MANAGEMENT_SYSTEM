@@ -137,10 +137,12 @@ func (svc *EventSvc) UpdateEvent(id uint, data *dtos.UpdateEventDTO) (int, error
 	}
 
 	if data.ImgURL != nil {
-		if !strings.HasPrefix(*data.ImgURL, "http") {
+		imgUrl := strings.TrimSpace(*data.ImgURL)
+		lowerImgUrl := strings.ToLower(imgUrl)
+		if imgUrl != "" && !strings.HasPrefix(lowerImgUrl, "http") && !strings.HasPrefix(lowerImgUrl, "data:image/") {
 			return http.StatusBadRequest, errors.New("invalid image url")
 		}
-		event.ImgUrl = *data.ImgURL
+		event.ImgUrl = imgUrl
 	}
 
 	// Handle time updates carefully
