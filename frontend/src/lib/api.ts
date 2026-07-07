@@ -68,7 +68,9 @@ api.interceptors.response.use(
 
         // Attempt to get a new access token
 
-        const res = await axios.post("http://localhost:5000/api/users/refresh", { token: refreshToken });
+        const res = await axios.post("http://localhost:5000/api/users/Refresh-token", {}, {
+          headers: { Authorization: `Bearer ${refreshToken}` }
+        });
 
         
 

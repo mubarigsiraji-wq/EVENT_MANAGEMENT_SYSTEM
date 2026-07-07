@@ -31,8 +31,8 @@ func RegisterRoute(r *gin.Engine) {
 	EventGroup := ApiGroup.Group("/events")
 	{
 		EventGroup.POST("/create", middlewares.Authenticated(), middlewares.RequiredRole("ADMIN", "ORGANIZER"), EventHandler.CreateEvent)
-		EventGroup.GET("/list", middlewares.Authenticated(), middlewares.RequiredRole("ADMIN", "ORGANIZER"), EventHandler.Getall)
-		EventGroup.GET("/details/:event_id", middlewares.Authenticated(), middlewares.RequiredRole("ADMIN", "ORGANIZER"), EventHandler.FindEventByid)
+		EventGroup.GET("/list", middlewares.Authenticated(), middlewares.RequiredRole("ADMIN", "ORGANIZER", "STAFF"), EventHandler.Getall)
+		EventGroup.GET("/details/:event_id", middlewares.Authenticated(), middlewares.RequiredRole("ADMIN", "ORGANIZER", "STAFF"), EventHandler.FindEventByid)
 		EventGroup.PATCH("/Update/:id", middlewares.Authenticated(), middlewares.RequiredRole("ADMIN", "STAFF", "ORGANIZER"), EventHandler.UpdateEvent)
 		EventGroup.GET("/search", middlewares.Authenticated(), middlewares.RequiredRole("ADMIN", "STAFF", "ORGANIZER"), EventHandler.FilterEvents)
 		EventGroup.PATCH("approve/:id", middlewares.Authenticated(), middlewares.RequiredRole("ADMIN"), EventHandler.ApproveEvent)
