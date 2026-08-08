@@ -6,11 +6,20 @@ export const DEFUALT_ERROR_MESSEGE =
 
   "Something went wrong. Please try again later.";
 
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+
+export const getNetworkErrorMessage = (error: any) => {
+  const method = error.config?.method?.toUpperCase() || "REQUEST";
+  const url = error.config?.url || "unknown endpoint";
+
+  return `Network error: Could not connect to the backend (${method} ${API_BASE_URL}${url}). Make sure the backend is running on port 5000 and restart the frontend dev server.`;
+};
+
 
 
 export const api = axios.create({
 
-  baseURL: "http://localhost:5000/api",
+  baseURL: API_BASE_URL,
 
 });
 
@@ -68,7 +77,7 @@ api.interceptors.response.use(
 
         // Attempt to get a new access token
 
-        const res = await axios.post("http://localhost:5000/api/users/Refresh-token", {}, {
+        const res = await axios.post(`${API_BASE_URL}/users/Refresh-token`, {}, {
           headers: { Authorization: `Bearer ${refreshToken}` }
         });
 
@@ -117,4 +126,3 @@ api.interceptors.response.use(
   }
 
 );
-

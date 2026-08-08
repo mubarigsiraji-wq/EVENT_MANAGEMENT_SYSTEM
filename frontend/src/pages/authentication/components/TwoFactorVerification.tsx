@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { ShieldCheck } from "lucide-react";
 import { useUserStore } from "../../../store/user-store";
-import { api } from "../../../lib/api";
+import { api, getNetworkErrorMessage } from "../../../lib/api";
 import type { LoginResponse } from "../../../types/user";
 
 export const TwoFactorVerification = () => {
@@ -40,7 +40,7 @@ export const TwoFactorVerification = () => {
       const response = await api.post<LoginResponse>("/users/verify-2fa-login", { email: loginEmail, otp: fullCode });
       verify2FA(response.data);
     } catch (err: any) {
-      if (!err.response) setError("Network error: Could not connect to the backend.");
+      if (!err.response) setError(getNetworkErrorMessage(err));
       else setError(err.response?.data?.message || "Invalid verification code.");
       setCode(["", "", "", "", "", ""]);
       inputRefs.current[0]?.focus();

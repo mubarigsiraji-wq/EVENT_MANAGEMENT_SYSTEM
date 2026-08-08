@@ -1,8 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import {
   Users, Search, Shield, Mail, Calendar,
-  MoreVertical, UserCheck, UserX, Key, RefreshCw,
-  ChevronDown, X, CheckCircle, AlertCircle
+  MoreVertical, UserCheck, UserX, Key, RefreshCw, X, CheckCircle, AlertCircle
 } from "lucide-react";
 import { api } from "../../../lib/api";
 import type { User } from "../../../types/user";

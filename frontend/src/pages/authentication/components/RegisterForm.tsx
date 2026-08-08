@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Mail, Lock, User, ShieldCheck, ArrowRight, Star } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
-import { api } from "../../../lib/api";
+import { api, getNetworkErrorMessage } from "../../../lib/api";
 
 const inputCls = "block w-full pl-11 pr-4 py-3.5 text-sm outline-none transition-all rounded-xl";
 const inputStyle = {
@@ -39,7 +39,7 @@ export const RegisterForm = () => {
       setSuccess("Account created successfully! Redirecting to login...");
       setTimeout(() => navigate("/auth/login"), 2000);
     } catch (err: any) {
-      if (!err.response) setError("Network error: Could not connect to the backend.");
+      if (!err.response) setError(getNetworkErrorMessage(err));
       else setError(err.response?.data?.message || err.response?.data?.error || "Registration failed. Please try again.");
     } finally {
       setIsLoading(false);

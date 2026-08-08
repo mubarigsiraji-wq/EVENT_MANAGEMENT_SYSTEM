@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { Mail, KeyRound, ArrowRight, ArrowLeft, Star, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { api } from "../../../lib/api";
+import { api, getNetworkErrorMessage } from "../../../lib/api";
 
 const inputCls = "block w-full pl-11 pr-4 py-3.5 text-sm outline-none transition-all rounded-xl";
 const inputStyle = {
@@ -29,7 +29,7 @@ export const ForgotPasswordForm = () => {
       setSuccessMsg("If this email exists, an OTP has been sent.");
       setStep(2);
     } catch (err: any) {
-      if (!err.response) setError("Network error: Could not connect to the backend.");
+      if (!err.response) setError(getNetworkErrorMessage(err));
       else setError(err.response?.data?.message || err.response?.data?.error || "Failed to request OTP.");
     } finally {
       setIsLoading(false);
@@ -69,7 +69,7 @@ export const ForgotPasswordForm = () => {
       setSuccessMsg("Password reset successfully! Redirecting to login...");
       setTimeout(() => navigate("/auth/login"), 2000);
     } catch (err: any) {
-      if (!err.response) setError("Network error: Could not connect to the backend.");
+      if (!err.response) setError(getNetworkErrorMessage(err));
       else setError(err.response?.data?.message || err.response?.data?.error || "Failed to reset password.");
     } finally {
       setIsLoading(false);

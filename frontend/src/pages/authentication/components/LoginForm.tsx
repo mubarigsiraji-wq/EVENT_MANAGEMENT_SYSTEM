@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, Star } from "lucide-react";
 import { useUserStore } from "../../../store/user-store";
-import { api } from "../../../lib/api";
+import { api, getNetworkErrorMessage } from "../../../lib/api";
 
 const inputWrapCls = "relative";
 const inputCls = "block w-full pl-11 pr-4 py-3.5 text-sm outline-none transition-all rounded-xl";
@@ -36,7 +36,7 @@ export const LoginForm = () => {
       if (err.response?.data?.message === "2FA_REQUIRED") {
         setRequires2FA(true, email);
       } else if (!err.response) {
-        setError("Network error: Could not connect to the backend.");
+        setError(getNetworkErrorMessage(err));
       } else {
         setError(err.response?.data?.message || "Invalid credentials. Please try again.");
       }
