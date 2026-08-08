@@ -12,7 +12,7 @@ export const getNetworkErrorMessage = (error: any) => {
   const method = error.config?.method?.toUpperCase() || "REQUEST";
   const url = error.config?.url || "unknown endpoint";
 
-  return `Network error: Could not connect to the backend (${method} ${API_BASE_URL}${url}). Make sure the backend is running on port 5000 and restart the frontend dev server.`;
+  return `Network error: Could not connect to the backend (${method} ${API_BASE_URL}${url}). Make sure the backend is running on port 5002 and restart the frontend dev server after changing .env.`;
 };
 
 

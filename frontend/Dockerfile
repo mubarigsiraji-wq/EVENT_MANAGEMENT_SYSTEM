@@ -14,6 +14,9 @@ RUN npm install --legacy-peer-deps
 # Copy source code
 COPY . .
 
+# Always use relative /api in Docker builds so nginx proxies to the backend container.
+ENV VITE_API_BASE_URL=/api
+
 # Build React/Vite application
 RUN npm run build
 
@@ -28,10 +31,11 @@ RUN rm -rf /usr/share/nginx/html/*
 
 # Copy React build files
 COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 # Expose HTTP port
 EXPOSE 80
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Start nginx (proxy target configurable via BACKEND_HOST / BACKEND_PORT)
+ENTRYPOINT ["/docker-entrypoint.sh"]

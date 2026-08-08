@@ -13,6 +13,8 @@ func CORSMiddleware() gin.HandlerFunc {
 		"http://127.0.0.1:5173": true,
 		"http://localhost:4173": true,
 		"http://127.0.0.1:4173": true,
+		"http://localhost":      true,
+		"http://127.0.0.1":      true,
 	}
 
 	for _, origin := range strings.Split(os.Getenv("CORS_ALLOWED_ORIGINS"), ",") {
