@@ -35,8 +35,8 @@ func RegisterRoute(r *gin.Engine) {
 		EventGroup.GET("/details/:event_id", middlewares.Authenticated(), middlewares.RequiredRole("ADMIN", "ORGANIZER", "STAFF"), EventHandler.FindEventByid)
 		EventGroup.PATCH("/Update/:id", middlewares.Authenticated(), middlewares.RequiredRole("ADMIN", "STAFF", "ORGANIZER"), EventHandler.UpdateEvent)
 		EventGroup.GET("/search", middlewares.Authenticated(), middlewares.RequiredRole("ADMIN", "STAFF", "ORGANIZER"), EventHandler.FilterEvents)
-		EventGroup.PATCH("approve/:id", middlewares.Authenticated(), middlewares.RequiredRole("ADMIN"), EventHandler.ApproveEvent)
-		EventGroup.GET("approved-event", middlewares.Authenticated(), middlewares.RequiredRole("ADMIN"), EventHandler.GetApprovedEvents)
+		EventGroup.PATCH("/approve/:id", middlewares.Authenticated(), middlewares.RequiredRole("ADMIN"), EventHandler.ApproveEvent)
+		EventGroup.GET("/approved-event", middlewares.Authenticated(), middlewares.RequiredRole("ADMIN"), EventHandler.GetApprovedEvents)
 	}
 
 	RegisterGroup := ApiGroup.Group("/registers")

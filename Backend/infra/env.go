@@ -26,10 +26,10 @@ func InitEnv() {
 	err := godotenv.Load()
 
 	if err != nil {
-		log.Fatal("error Loading dotenv")
+		log.Println("warning: .env file not found, using environment variables")
 	}
 
-	Configuration.Port = os.Getenv("PORT")
+	Configuration.Port = getEnv("PORT", "5000")
 	Configuration.DbUser = os.Getenv("DB_USER")
 	Configuration.DbPassword = os.Getenv("DB_PASSWORD")
 	Configuration.DbName = os.Getenv("DB_NAME")
@@ -39,4 +39,13 @@ func InitEnv() {
 	Configuration.Refresh_jwt_token = os.Getenv("Refresh_jwt_Token")
 	Configuration.EMAIL_USER = os.Getenv("EMAIL_USER")
 	Configuration.EMAIL_PASS = os.Getenv("EMAIL_PASS")
+}
+
+func getEnv(key string, fallback string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return fallback
+	}
+
+	return value
 }
